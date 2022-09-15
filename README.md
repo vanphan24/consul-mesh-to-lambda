@@ -207,13 +207,13 @@ ingressGateways:
 EOF
 ```
 
-18. Deploy Consul client using helm onto your EKS cluster using helm.
+18. Deploy Consul client using helm onto your EKS cluster using helm. During the deployment, it will connect and join the HCP Consul cluster using the parameters ($DATACENTER, $RETRY_JOIN, $KUBE_API_URL) provided in the helm file.
 
 ```
 helm install consul hashicorp/consul --values config.yaml --version "0.47.1" --set global.image=hashicorp/consul-enterprise:1.13.1-ent 
 ```
 
-19. Deploy frontend service
+19. Deploy frontend service.
 
 ```
 kubectl apply -f fakeapp/frontend.yaml 
@@ -222,11 +222,13 @@ Note: You frontend.yaml fileincludes a deployment annotation indicating that the
 Ths name should match the "SERVICE NAME" used in the lambda-reg.json registration file in the steps below.
 Ths name should also match the "Name" used in the service-default.json file in the steps below.
 
+
+
 # Deploy Lambda Function
 
-We will now create the backend service lambda function. 
+We will now create the backend service lambda function, which will be used as the upstream connection for the frontend service ion the mesh.
 
-1. Navigate to the cd ```envoy-lambda-test``` folder
+1. Navigate to the ```envoy-lambda-test``` folder
 
 ```
 cd envoy-lambda-test
