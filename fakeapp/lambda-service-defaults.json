@@ -1,0 +1,14 @@
+{
+  "Kind": "service-defaults",
+  "Name": "backend-lambda-demo",
+  "Protocol": "http",
+  "TransparentProxy": {},
+  "MeshGateway": {},
+  "Expose": {},
+  "Meta": {
+    "serverless.consul.hashicorp.com/v1alpha1/lambda/arn": "arn:aws:lambda:us-west-2:711129375688:function:backend-lambda-fakeapp-van",
+    "serverless.consul.hashicorp.com/v1alpha1/lambda/enabled": "true",
+    "serverless.consul.hashicorp.com/v1alpha1/lambda/payload-passthrough": "true",
+    "serverless.consul.hashicorp.com/v1alpha1/lambda/region": "us-west-2"
+  }
+}
