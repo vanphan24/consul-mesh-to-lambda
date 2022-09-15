@@ -298,7 +298,7 @@ For the sake of simplicy of this demo, we will just ensure the IAM role used by 
 5. Click on **Add Permissions** and select **Create Inline**
 6. Click on JSON tab and copy the following permissions in the box:  
 
-Make sure you change the ```Your-Lambda-ARN``` field to your Lambda function's ARN. Your can locate the ARN in your Lambda function's AWS Lambda console. 
+Make sure you change the ```<Your-Lambda-ARN>``` field to your Lambda function's ARN. Your can locate the ARN in your Lambda function's AWS Lambda console. 
 
 ```
 {
@@ -318,7 +318,7 @@ Make sure you change the ```Your-Lambda-ARN``` field to your Lambda function's A
 ![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%203.34.47%20PM.png)
 
 
-Note, as an option, instead of **Your-Lambda-ARN**, you can set it to "*" which will give permission to invoke ***any*** lambda function.  
+Note, as an option, instead of ```Your-Lambda-ARN```, you can set it to "*" which will give permission to invoke ***any*** lambda function.  
 
 7. Click **Review policy**, provide name for new policy, and **Create policy**.  
 
