@@ -3,6 +3,8 @@ Demo showing service in mesh connecting to another service in a lambda function.
 
 This repo will demo a simple two service app called Fake Service where the frontend service will connect to a backend service. The frontend service will be on an EKS cluster in Consul's service mesh. The backend service will be a lambda function.
 
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%204.09.36%20PM.png)
+
 In this demo, we will:
 
 - Deploy a Consul client cluster running on Kubernetes (EKS), and connect it to an HCP Consul cluster on AWS.
@@ -360,7 +362,7 @@ curl --header "X-Consul-Token: $CONSUL_HTTP_TOKEN"  --request PUT --data @lambda
 
 4. Once registered, the service representing the Lambda function will appear in the Consul UI.
 
-<INSERT screenshot>
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%201.22.19%20PM.png)
   
 5. Create lambda service default file. This file binds the LAMBDA ARN with the service "backend-lambda-demo". When any service (ie frontend service) tries to connect to the "backend-lambda-demo" service, Consul will know to send it to the LAMBDA ARN.
   
@@ -393,7 +395,7 @@ EOF
 curl --request PUT --data @lambda-service-default.json $CONSUL_HTTP_ADDR/v1/config --header "X-Consul-Token: $CONSUL_HTTP_TOKEN"  
 ```
 
-8. Confirm it service-default applied:
+8. Confirm the service-default applied:
 ```
 curl --request GET $CONSUL_HTTP_ADDR/v1/config/service-defaults/backend-lambda-demo --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" | jq  
 ```  
@@ -408,7 +410,7 @@ kubectl port-forward service/frontend 8888:9090
   
 2. Open browser and set URL to: ```localhost:8888/ui``` 
   
-<INSERT IMAGE>  
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%201.47.49%20PM.png)
   
   
   
@@ -416,7 +418,7 @@ kubectl port-forward service/frontend 8888:9090
   
 It is recommended to use a Terminating gateway with lambda functions. Since an envoy proxy cannot be installed with lambda function, the Terminating GW is the closest proxy that can enforce Consul configurations like service intentions.   
   
-In our Consul config.yaml file used to deploy COnsul via helm, he had enabled the terminating gateway:
+In our Consul config.yaml file used to deploy Consul via helm, we had enabled the terminating gateway:
 ```
 .  
 .  
@@ -424,8 +426,13 @@ terminatingGateways:
   enabled: true
 .
 .
-  ```
-Now, we just need to configure Consul to send any traffic destined for "backend-lambda-demo" to go through the service terminating gateway.  Its a simple terminating gateway configuration entry
+``` 
+     
+Now, we just need to configure Consul to send any traffic destined for "backend-lambda-demo" to go through the service terminating gateway.  Its a simple terminating gateway configuration entry.
+
+
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%204.09.50%20PM.png)
+
 
 1. Apply the term-gw-lambda.yaml file.
   
@@ -434,6 +441,8 @@ kubectl apply -f fakeapp/term-gw-lambda.yaml
 ```
   
 2. Test out intention. Go to your Consul UI and create an intention to ***deny*** "frontend" service from connecting to "backend-lambda-demo" service. 
+  
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%202.06.13%20PM.png)
   
 3. Port forward the frontend service to your local machine.
 ```
@@ -444,4 +453,4 @@ kubectl port-forward service/frontend 8888:9090
    The boxes shold be red, indicating "frontend" cannot reach "backend-lambda-demo" service. 
   
   
-<INSERT IMAGE>  
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%202.09.18%20PM.png)
