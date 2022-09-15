@@ -37,11 +37,6 @@ spec:
       annotations:
         "consul.hashicorp.com/connect-inject": "true"
         "consul.hashicorp.com/transparent-proxy": "false"        
-        # Disabled TProxy b/c we are invoking the Lambda function without using a Terminating GW in this demo.
-        # Term GW is recommanded but we're not using it for simplicy of the demo 
-        # Terminating GW acts as the envoy proxy for the Lambda.
-        # Without Term GW, there's nothing to enforce intentions or Tproxy on the Lambda function
-
 #        "consul.hashicorp.com/connect-service-upstreams": "backend:9091"
         "consul.hashicorp.com/connect-service-upstreams": "backend-lambda-demo:9091"
     spec:
