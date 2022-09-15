@@ -320,12 +320,12 @@ Make sure you change the ```Your-Lambda-ARN``` field to your Lambda function's A
 
 Note, as an option, instead of **Your-Lambda-ARN**, you can set it to "*" which will give permission to invoke ***any*** lambda function.  
 
-7. Click **Review policy**, provide name for new policy, and **Create policy**.
+7. Click **Review policy**, provide name for new policy, and **Create policy**.  
 
 
 # Configure Lambda on Consul
 
-Next, we need to register our lambda function to Consul so Consul knows about it. We will do it the manual way to help you understand what is occuring. But there’s an automated registration method using Terraform to deploy a [Lambda registrator](https://www.consul.io/docs/lambda/registration#automatic-lambda-function-registration).
+Next, we need to register our lambda function to Consul so Consul knows about it. We will do it the manual way to help you understand what is occuring under the covers. But there’s an automated registration method using a [Lambda registrator](https://www.consul.io/docs/lambda/registration#automatic-lambda-function-registration) which is deployed with Terraform.
 
 
 1. Give your lambda function a name that will be used by Consul. We will use "backend-lambda-demo" for this demo.   
@@ -384,7 +384,7 @@ curl --header "X-Consul-Token: $CONSUL_HTTP_TOKEN"  --request PUT --data @lambda
 EOF
 ```
   
-6. Change ${LAMBDA_ARN} and ${AWS_REGION} to your Lambda function's ARN and aws region, respectively.
+6. Change ```${LAMBDA_ARN}``` and ```${AWS_REGION}``` to your Lambda function's ARN and aws region, respectively.
   Note: The Lambda function ARN can be found on your Lambda function from AWS Lambda console window.
 
 7. Apply the lambda-service-defaults.json file to Consul using the Consul API.
