@@ -5,11 +5,11 @@ This repo will demo a simple two service app called Fake Service where the front
 
 In this demo, we will:
 
-- Connect a Consul client cluster running on Kubernetes (EKS) to an HCP Consul cluster on AWS.
-- Deploy frontend and backend service on EKS.
-- Deploy a lambda function.
-- Configure Consul to be aware of Lambda function.
-- Point frontend service to connect to Lambda backend service on Lambda instead of local backend service on EKS.
+- Deploy a Consul client cluster running on Kubernetes (EKS), and connect it to an HCP Consul cluster on AWS.
+- Deploy frontend service on EKS.
+- Deploy a backend service on a Lambda function.
+- Configure Consul to use Lambda functions.
+- Connect frontend service to connect to Lambda backend service on Lambda
 
 
 # Pre-Req
@@ -54,17 +54,17 @@ aws eks --region <your-region> update-kubeconfig --name <your_eks_cluster_name>
 ```
 
 
-6. On the HCP portal, go to your HCP Consul cluster and download the client files.  
+5. On the HCP portal, go to your HCP Consul cluster and download the client files.  
 You can click the **Access Consul** dropdown and then click **Download to install Client Agents** to download a zip archive that contains the necessary files to join your client agents to the cluster.  
 
 
 ![Client download](https://github.com/hashicorp/admin-partitions/blob/main/images/Screen%20Shot%202022-08-22%20at%2012.45.14%20PM.png)
 
-7. Unzip the client config package and use **ls** to confirm that both the client_config.json and ca.pem files are available.  
-  Then copy files into your ```/admin-partitions/aks/deploy-on-hcp-consul-azure-aks``` working directory.  
+6. Unzip the client config package and use **ls** to confirm that both the client_config.json and ca.pem files are available.  
+  Then copy files into your ```/consul-mesh-to-lambda``` working directory.  
   
 
-8. On the HCP portal, go to your HCP Consul cluster. 
+7. On the HCP portal, go to your HCP Consul cluster. 
 
 ![hcp](https://github.com/hashicorp/admin-partitions/blob/main/images/Screen%20Shot%202022-08-22%20at%201.00.26%20PM.png)
 
@@ -78,7 +78,7 @@ The HCP Consul dashboard UI link is now in your clipboard. Set this UI link to t
 export CONSUL_HTTP_ADDR=<Consul_dashboard_ui_link>
 ```
 
-9. On the HCP portal, go to your HCP Consul cluster.  
+8. On the HCP portal, go to your HCP Consul cluster.  
 
 ![hcp-admin-token](https://github.com/hashicorp/admin-partitions/blob/main/images/Screen%20Shot%202022-08-22%20at%201.17.50%20PM.png)
 
@@ -93,20 +93,20 @@ Set this token to the CONSUL_HTTP_TOKEN environment variable on your terminal so
 export CONSUL_HTTP_TOKEN=<Consul_root_token>
 ```
 
-10. Use the ca.pem file in the current working directory to create a Kubernetes secret to store the Consul CA certificate. 
+9. Use the ca.pem file in the current working directory to create a Kubernetes secret to store the Consul CA certificate. 
 ```
 kubectl create secret generic "consul-ca-cert" --from-file='tls.crt=./ca.pem' 
 ```
 
 
-11. The Consul gossip encryption key is embedded in the client_config.json file that you downloaded and extracted into your current directory. Issue the following command to create a Kubernetes secret that stores the Consul gossip key encryption key. The following command uses jq to extract the value from the client_config.json file.  
+10. The Consul gossip encryption key is embedded in the client_config.json file that you downloaded and extracted into your current directory. Issue the following command to create a Kubernetes secret that stores the Consul gossip key encryption key. The following command uses jq to extract the value from the client_config.json file.  
 
 ```
 kubectl create secret generic "consul-gossip-key" --from-literal="key=$(jq -r .encrypt client_config.json)"  
 ```
 
 
-12. The last secret you need to add is an ACL bootstrap token. You can use the one you set to your CONSUL_HTTP_TOKEN environment variable earlier. Issue the following command to create a Kubernetes secret to store the bootstrap ACL token.  
+11. The last secret you need to add is an ACL bootstrap token. You can use the one you set to your CONSUL_HTTP_TOKEN environment variable earlier. Issue the following command to create a Kubernetes secret to store the bootstrap ACL token.  
 
 ```
 kubectl create secret generic "consul-bootstrap-token" --from-literal="token=${CONSUL_HTTP_TOKEN}" 
@@ -115,18 +115,18 @@ kubectl create secret generic "consul-bootstrap-token" --from-literal="token=${C
 
 # Create Consul configuration files for each team
 
-13.  Issue the following command to set the HCP Consul cluster DATACENTER environment variable, extracted from the client_config.json file. This env variable will be used in your Consul helm value file.
+12.  Issue the following command to set the HCP Consul cluster DATACENTER environment variable, extracted from the client_config.json file. This env variable will be used in your Consul helm value file.
 
 ```
 export DATACENTER=$(jq -r .datacenter client_config.json)
 ```
 
-14. Extract the private server URL from the client_config.json file so that it can be set in the Helm values file as the *externalServers:hosts entry*. 
+13. Extract the private server URL from the client_config.json file so that it can be set in the Helm values file as the *externalServers:hosts entry*. 
 ```
 export RETRY_JOIN=$(jq -r --compact-output .retry_join client_config.json)
 ```
 
-15. Extract the public server URL from the client_config.json file so that it can be set in the Helm values file as the **k8sAuthMethodHost** entry.
+14. Extract the public server URL from the client_config.json file so that it can be set in the Helm values file as the **k8sAuthMethodHost** entry.
 
 ```
 export KUBE_API_URL=$(kubectl config view -o jsonpath="{.clusters[?(@.name == \"$(kubectl config current-context)\")].cluster.server}")
@@ -148,7 +148,7 @@ consul-cluster-demo
 https://dc1-k8s-9f690a3c.hcp.westus2.azmk8s.io:443
 ```
 
-17. Run the following command to generate the Helm values file. Notice the environment variables *${DATACENTER}*, *${KUBE_API_URL}*, and *${RETRY_JOIN}* will be used to reflect your specific EKS cluster values.  
+16. Run the following command to generate the Helm values file. Notice the environment variables *${DATACENTER}*, *${KUBE_API_URL}*, and *${RETRY_JOIN}* will be used to reflect your specific EKS cluster values.  
 
 Also notice ```enable_serverless_plugin``` is set to ```true```.
 
@@ -208,12 +208,15 @@ ingressGateways:
 EOF
 ```
 
+
 18. Deploy frontend service
 
 ```
 kubectl apply -f fakeapp/frontend.yaml 
 ```
-
+Note: You frontend.yaml fileincludes a deployment annotation indicating that the upstream name is called "***backend-lambda-demo***".  
+Ths name should match the "SERVICE NAME" used in the lambda-reg.json registration file in the steps below.
+Ths name should also match the "Name" used in the service-default.json file in the steps below.
 
 # Deploy Lambda Function
 
