@@ -244,18 +244,25 @@ GOOS=linux go build main.go && zip envoy-lambda-test.zip main
 
 4. Click on **Create function**
 
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%203.12.50%20PM.png)
+
 - Give it a function name: ```backend-lambda-fakeapp```
 - Select **Go 1.x** for the runtime.  
+
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%203.13.31%20PM.png)
+
 - Leave everything else as default
 - Click **Create function**
 
 5. Once created, in the newly created Lambda function window, click **Upload from** and select **.zip file**.
 
-6. Upload the envoy-lambda-test.zip zip file you created earlier.
+6. Upload the ```envoy-lambda-test.zip``` zip file you created earlier.
 
 7. Once upload completes, in the same Lambda function window, click **Edit** for the **Runtime settings** box.
 
-8. Change the Handler box to ```main```
+8. Change the Handler box to ```main```. Click **Save**.
+
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%2012.09.40%20PM.png)
 
 9. Now you can manually be able to invoke the function from your terminal to test ot works.
 
@@ -272,13 +279,21 @@ cat response.json
 # IAM Policy
 
 In order for the  frontend service to be able to invoke the backend lambda functiopn, it needs to have IAM permissions to invoke the Lambda function. 
-For the sake of simplicy of this demo, we will just ensure the IAM role used by the EKS work nodes have the invoke lambda permisssions. The frontend service running on the EKS worker nodes will then inherit the permissions from the nodes.
+For the sake of simplicy of this demo, we will just ensure the IAM role used by the EKS worker nodes have the invoke lambda permisssions. The frontend service running on the EKS worker nodes will then inherit the permissions from the nodes.
 
 1. In your AWS Elastic Kubernetes Service (EKS) console window, go to your EKS cluster.
 2. Click on Compute tab
    - Under Node group column, click on the node group
+  
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%2012.43.05%20PM.png)
+
+
 3. In Node group page, under the Details tab, there’s an **Node IAM role ARN** which refers to the IAM role the node group is using.
    - Click on the ARN role.
+
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%2012.44.17%20PM.png)
+
+
 4. It takes you to the IAM role page for thie IAM role. Click on **Add permission->Attach policy**
 5. Click on **Add Permissions** and select **Create Inline**
 6. Click on JSON tab and copy the following permissions in the box:
@@ -297,7 +312,10 @@ For the sake of simplicy of this demo, we will just ensure the IAM role used by 
     ]
 }
 ```
-Note, as an option, instead of <Your-Lambda-ARN>, you can set it to "*" which will give permission to invoke ***any*** lambda function.  
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%203.34.47%20PM.png)
+
+
+Note, as an option, instead of **Your-Lambda-ARN**, you can set it to "*" which will give permission to invoke ***any*** lambda function.  
 
 7. Click **Review policy**, provide name for new policy, and **Create policy**.
 
