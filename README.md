@@ -296,7 +296,10 @@ For the sake of simplicy of this demo, we will just ensure the IAM role used by 
 
 4. It takes you to the IAM role page for thie IAM role. Click on **Add permission->Attach policy**
 5. Click on **Add Permissions** and select **Create Inline**
-6. Click on JSON tab and copy the following permissions in the box:
+6. Click on JSON tab and copy the following permissions in the box:  
+
+Make sure you change the **<Your-Lambda-ARN>** to your Lambda function's ARN. Your can locate the ARN in your Lambda function's AWS Lambda console. 
+
 ```
 {
     "Version": "2012-10-17",
