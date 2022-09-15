@@ -386,7 +386,7 @@ curl --header "X-Consul-Token: $CONSUL_HTTP_TOKEN"  --request PUT --data @lambda
 EOF
 ```
   
-6. Change ```${LAMBDA_ARN}``` and ```${AWS_REGION}``` to your Lambda function's ARN and aws region, respectively.
+6. Edit your lambda-service-defaults.json  file and change ```${LAMBDA_ARN}``` and ```${AWS_REGION}``` to your Lambda function's ARN and aws region, respectively.
   Note: The Lambda function ARN can be found on your Lambda function from AWS Lambda console window.
 
 7. Apply the lambda-service-defaults.json file to Consul using the Consul API.
