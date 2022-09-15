@@ -194,6 +194,8 @@ connectInject:
   enable_serverless_plugin: true
 controller:
   enabled: true
+terminatingGateways:
+  enabled: true
 ingressGateways:
   enabled: true
   defaults:
@@ -202,6 +204,7 @@ ingressGateways:
     - name: ingress-gateway
       service:
         type: LoadBalancer
+        
 EOF
 ```
 
@@ -284,20 +287,130 @@ For the sake of simplicy of this demo, we will just ensure the IAM role used by 
     ]
 }
 ```
-Note, instead of <Your-Lambda-ARN>, you can set it to "*" which will give permission to invoke ***any*** lambda function.
+Note, as an option, instead of <Your-Lambda-ARN>, you can set it to "*" which will give permission to invoke ***any*** lambda function.  
+
 7. Click **Review policy**, provide name for new policy, and **Create policy**.
 
 
 # Configure Lambda on Consul
 
-Next, we need to register our lambda function to Consul so Consul knows about it. We will do it the manual way but there’s an automated registration method using Terraform to deploy a [Lambda registrator](https://www.consul.io/docs/lambda/registration#automatic-lambda-function-registration).
+Next, we need to register our lambda function to Consul so Consul knows about it. We will do it the manual way to help you understand what is occuring. But there’s an automated registration method using Terraform to deploy a [Lambda registrator](https://www.consul.io/docs/lambda/registration#automatic-lambda-function-registration).
 
 
-1. 
+1. Give your lambda function a name that will be used by Consul. We will use "backend-lambda-demo" for this demo.   
+Note: This is your desired service name in Consul representing your lambda function within the mesh.
+```  
+export SERVICE_NAME=backend-lambda-demo
+```
+  
+2. Create lambda-reg.json registration file for lambda function.
+  
+```
+cat > lambda-reg.json << EOF
+{
+  "Node": "lambdas",
+  "SkipNodeUpdate": true,
+  "NodeMeta": {
+    "external-node": "true",
+    "external-probe": "true"
+  },
+  "Service": {
+    "Service": "${SERVICE_NAME}"
+  }
+}
+EOF
+```
+  
+3. Use Consul API and lambda-reg.json file to register the function to the catalog.
 
+```
+curl --header "X-Consul-Token: $CONSUL_HTTP_TOKEN"  --request PUT --data @lambda-reg.json $CONSUL_HTTP_ADDR/v1/catalog/register
+```
 
+4. Once registered, the service representing the Lambda function will appear in the Consul UI.
 
+<INSERT screenshot>
+  
+5. Create lambda service default file. This file binds the LAMBDA ARN with the service "backend-lambda-demo". When any service (ie frontend service) tries to connect to the "backend-lambda-demo" service, Consul will know to send it to the LAMBDA ARN.
+  
+ 
+```
+  cat > lambda-service-defaults.json << EOF
+{
+  "Kind": "service-defaults",
+  "Name": "backend-lambda-demo",
+  "Protocol": "http",
+  "TransparentProxy": {},
+  "MeshGateway": {},
+  "Expose": {},
+  "Meta": {
+    "serverless.consul.hashicorp.com/v1alpha1/lambda/arn": "${LAMBDA_ARN}",
+    "serverless.consul.hashicorp.com/v1alpha1/lambda/enabled": "true",
+    "serverless.consul.hashicorp.com/v1alpha1/lambda/payload-passthrough": "true",
+    "serverless.consul.hashicorp.com/v1alpha1/lambda/region": "${AWS_REGION}"
+  }
+}
+EOF
+```
+  
+6. Change ${LAMBDA_ARN} and ${AWS_REGION} to your Lambda function's ARN and aws region, respectively.
+  Note: The Lambda function ARN can be found on your Lambda function from AWS Lambda console window.
 
+7. Apply the lambda-service-defaults.json file to Consul using the Consul API.
 
+```
+curl --request PUT --data @lambda-service-default.json $CONSUL_HTTP_ADDR/v1/config --header "X-Consul-Token: $CONSUL_HTTP_TOKEN"  
+```
 
+8. Confirm it service-default applied:
+```
+curl --request GET $CONSUL_HTTP_ADDR/v1/config/service-defaults/backend-lambda-demo --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" | jq  
+```  
+  
+  
+# Confirm Connection between frontend service and backend lamdda function.  
 
+1. Port forward the frontend service to your local machine.
+```
+kubectl port-forward service/frontend 8888:9090
+```
+  
+2. Open browser and set URL to: ```localhost:8888/ui``` 
+  
+<INSERT IMAGE>  
+  
+  
+  
+# Terminating Gateway
+  
+It is recommended to use a Terminating gateway with lambda functions. Since an envoy proxy cannot be installed with lambda function, the Terminating GW is the closest proxy that can enforce Consul configurations like service intentions.   
+  
+In our Consul config.yaml file used to deploy COnsul via helm, he had enabled the terminating gateway:
+```
+.  
+.  
+terminatingGateways:
+  enabled: true
+.
+.
+  ```
+Now, we just need to configure Consul to send any traffic destined for "backend-lambda-demo" to go through the service terminating gateway.  Its a simple terminating gateway configuration entry
+
+1. Apply the term-gw-lambda.yaml file.
+  
+```
+kubectl apply -f fakeapp/term-gw-lambda.yaml 
+```
+  
+2. Test out intention. Go to your Consul UI and create an intention to ***deny*** "frontend" service from connecting to "backend-lambda-demo" service. 
+  
+3. Port forward the frontend service to your local machine.
+```
+kubectl port-forward service/frontend 8888:9090
+```
+  
+4. Go back on your browser, and set URL to: ```localhost:8888/ui``` 
+   The boxes shold be red, indicating "frontend" cannot reach "backend-lambda-demo" service. 
+  
+  
+<INSERT IMAGE>  
