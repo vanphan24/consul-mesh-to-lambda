@@ -87,46 +87,45 @@ export CONSUL_HTTP_ADDR=<Consul_dashboard_ui_link>
 - Select **Generate admin token** and then click the copy icon from the dialog box. 
 - A global-management root token is now in your clipboard. 
  
-Set this token to the CONSUL_HTTP_TOKEN environment variable on your terminal so that you can reference it later in the tutorial.
+9. Set this token to the CONSUL_HTTP_TOKEN environment variable on your terminal so that you can reference it later in the tutorial.
 
 ```
 export CONSUL_HTTP_TOKEN=<Consul_root_token>
 ```
 
-9. Use the ca.pem file in the current working directory to create a Kubernetes secret to store the Consul CA certificate. 
+10. Use the ca.pem file in the current working directory to create a Kubernetes secret to store the Consul CA certificate. 
 ```
 kubectl create secret generic "consul-ca-cert" --from-file='tls.crt=./ca.pem' 
 ```
 
 
-10. The Consul gossip encryption key is embedded in the client_config.json file that you downloaded and extracted into your current directory. Issue the following command to create a Kubernetes secret that stores the Consul gossip key encryption key. The following command uses jq to extract the value from the client_config.json file.  
+11. The Consul gossip encryption key is embedded in the client_config.json file that you downloaded and extracted into your current directory. Issue the following command to create a Kubernetes secret that stores the Consul gossip key encryption key. The following command uses jq to extract the value from the client_config.json file.  
 
 ```
 kubectl create secret generic "consul-gossip-key" --from-literal="key=$(jq -r .encrypt client_config.json)"  
 ```
 
 
-11. The last secret you need to add is an ACL bootstrap token. You can use the one you set to your CONSUL_HTTP_TOKEN environment variable earlier. Issue the following command to create a Kubernetes secret to store the bootstrap ACL token.  
+12. The last secret you need to add is an ACL bootstrap token. You can use the one you set to your CONSUL_HTTP_TOKEN environment variable earlier. Issue the following command to create a Kubernetes secret to store the bootstrap ACL token.  
 
 ```
 kubectl create secret generic "consul-bootstrap-token" --from-literal="token=${CONSUL_HTTP_TOKEN}" 
 ```
 
 
-# Create Consul configuration files for each team
-
-12.  Issue the following command to set the HCP Consul cluster DATACENTER environment variable, extracted from the client_config.json file. This env variable will be used in your Consul helm value file.
+# Create Consul configuration file
+13.  Issue the following command to set the HCP Consul cluster DATACENTER environment variable, extracted from the client_config.json file. This env variable will be used in your Consul helm value file.
 
 ```
 export DATACENTER=$(jq -r .datacenter client_config.json)
 ```
 
-13. Extract the private server URL from the client_config.json file so that it can be set in the Helm values file as the *externalServers:hosts entry*. 
+14. Extract the private server URL from the client_config.json file so that it can be set in the Helm values file as the *externalServers:hosts entry*. 
 ```
 export RETRY_JOIN=$(jq -r --compact-output .retry_join client_config.json)
 ```
 
-14. Extract the public server URL from the client_config.json file so that it can be set in the Helm values file as the **k8sAuthMethodHost** entry.
+15. Extract the public server URL from the client_config.json file so that it can be set in the Helm values file as the **k8sAuthMethodHost** entry.
 
 ```
 export KUBE_API_URL=$(kubectl config view -o jsonpath="{.clusters[?(@.name == \"$(kubectl config current-context)\")].cluster.server}")
@@ -148,7 +147,7 @@ consul-cluster-demo
 https://dc1-k8s-9f690a3c.hcp.westus2.azmk8s.io:443
 ```
 
-16. Run the following command to generate the Helm values file. Notice the environment variables *${DATACENTER}*, *${KUBE_API_URL}*, and *${RETRY_JOIN}* will be used to reflect your specific EKS cluster values.  
+17. Run the following command to generate the Helm values file. Notice the environment variables *${DATACENTER}*, *${KUBE_API_URL}*, and *${RETRY_JOIN}* will be used to reflect your specific EKS cluster values.  
 
 Also notice ```enable_serverless_plugin``` is set to ```true```.
 
@@ -208,8 +207,13 @@ ingressGateways:
 EOF
 ```
 
+18. Deploy Consul client using helm onto your EKS cluster using helm.
 
-18. Deploy frontend service
+```
+helm install consul hashicorp/consul --values config.yaml --version "0.47.1" --set global.image=hashicorp/consul-enterprise:1.13.1-ent 
+```
+
+19. Deploy frontend service
 
 ```
 kubectl apply -f fakeapp/frontend.yaml 
