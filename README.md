@@ -245,8 +245,9 @@ GOOS=linux go build main.go && zip envoy-lambda-test.zip main
 4. Click on **Create function**
 
 - Give it a function name: ```backend-lambda-fakeapp```
-- Select **Go 1.x** for the runtime.
-- Click **Create function***=
+- Select **Go 1.x** for the runtime.  
+- Leave everything else as default
+- Click **Create function**=
 
 5. Once created, in the newly created Lambda function window, click **Upload from** and select **.zip file**.
 
