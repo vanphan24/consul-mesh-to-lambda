@@ -416,7 +416,7 @@ kubectl port-forward service/frontend 8888:9090
   
   
     
-# Using Terminating Gateway
+# Using Terminating Gateway (Recommended)
   
 It is recommended to use a Terminating gateway with lambda functions. Since an envoy proxy cannot be installed with lambda function, the Terminating GW is the closest proxy that can enforce Consul configurations like service intentions.   
   
