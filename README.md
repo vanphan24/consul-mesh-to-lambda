@@ -410,11 +410,13 @@ kubectl port-forward service/frontend 8888:9090
   
 2. Open browser and set URL to: ```localhost:8888/ui``` 
   
-![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%201.47.49%20PM.png)
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%201.47.49%20PM.png)    
   
   
   
-# Terminating Gateway
+  
+    
+# Using Terminating Gateway
   
 It is recommended to use a Terminating gateway with lambda functions. Since an envoy proxy cannot be installed with lambda function, the Terminating GW is the closest proxy that can enforce Consul configurations like service intentions.   
   
@@ -439,7 +441,24 @@ Now, we just need to configure Consul to send any traffic destined for "backend-
 ```
 kubectl apply -f fakeapp/term-gw-lambda.yaml 
 ```
+
+2. **If ACLs are enabled,** which it is in our case since we are using HCP which has ACLs enabled by default, we will need to provide the Terminating Gateway with permissions on anything related to the "backend-lambda-demo" service. 
+
+  - Go to the Consul UI --> **Roles** side tab.
+  - Click on the Terminiating gateway role: **consul-terminating-gateway-acl-role** 
+  - In the Policies section, click **Create new policy**. 
   
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-16%20at%2010.46.56%20AM.png)
+ 
+  - In the New Policy window, provide a name and add the code below into the **Rules** box.
+```
+service "lambda-backend-demo" {
+  policy = "write"
+}
+```
+  - Click **Create and apply**
+
+
 2. Test out intention. Go to your Consul UI and create an intention to ***deny*** "frontend" service from connecting to "backend-lambda-demo" service. 
   
 ![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%202.06.13%20PM.png)
