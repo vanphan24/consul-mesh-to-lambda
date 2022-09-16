@@ -459,16 +459,16 @@ service "lambda-backend-demo" {
   - Click **Create and apply**
 
 
-2. Test out intention. Go to your Consul UI and create an intention to ***deny*** "frontend" service from connecting to "backend-lambda-demo" service. 
+3. Test out intention. Go to your Consul UI and create an intention to ***deny*** "frontend" service from connecting to "backend-lambda-demo" service. 
   
 ![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%202.06.13%20PM.png)
   
-3. Port forward the frontend service to your local machine.
+4. Port forward the frontend service to your local machine.
 ```
 kubectl port-forward service/frontend 8888:9090
 ```
   
-4. Go back on your browser, and set URL to: ```localhost:8888/ui``` 
+5. Go back on your browser, and set URL to: ```localhost:8888/ui``` 
    The boxes shold be red, indicating "frontend" cannot reach "backend-lambda-demo" service. 
   
   
