@@ -433,7 +433,7 @@ terminatingGateways:
 Now, we just need to configure Consul to send any traffic destined for "backend-lambda-demo" to go through the service terminating gateway.  Its a simple terminating gateway configuration entry.
 
 
-![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-15%20at%204.09.50%20PM.png)
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-16%20at%204.47.10%20PM.pngg)
 
 
 1. Apply the term-gw-lambda.yaml file.
@@ -448,7 +448,7 @@ kubectl apply -f fakeapp/term-gw-lambda.yaml
   - Click on the Terminiating gateway role: **consul-terminating-gateway-acl-role** 
   - In the Policies section, click **Create new policy**. 
   
-![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-16%20at%2010.46.56%20AM.png)
+![image](https://github.com/vanphan24/consul-mesh-to-lambda/blob/main/images/Screen%20Shot%202022-09-16%20at%204.47.10%20PM.png)
  
   - In the New Policy window, provide a name and add the code below into the **Rules** box.
 ```
