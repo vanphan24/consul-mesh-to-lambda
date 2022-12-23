@@ -392,7 +392,7 @@ EOF
 7. Apply the lambda-service-defaults.json file to Consul using the Consul API.
 
 ```
-curl --request PUT --data @lambda-service-default.json $CONSUL_HTTP_ADDR/v1/config --header "X-Consul-Token: $CONSUL_HTTP_TOKEN"  
+curl --request PUT --data @lambda-service-defaults.json $CONSUL_HTTP_ADDR/v1/config --header "X-Consul-Token: $CONSUL_HTTP_TOKEN"  
 ```
 
 8. Confirm the service-default applied:
